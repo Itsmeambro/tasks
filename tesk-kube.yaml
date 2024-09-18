@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasks-md
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tasks-md
+  template:
+    metadata:
+      labels:
+        app: tasks-md
+    spec:
+      containers:
+      - name: tasks-md
+        image: baldissaramatheus/tasks.md
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: Title
+          value: "Noted Tasks"
+        volumeMounts:
+        - name: tasks-volume
+          mountPath: /tasks
+        - name: config-volume
+          mountPath: /config
+        ports:
+        - containerPort: 8080
+      restartPolicy: Always
+      volumes:
+      - name: tasks-volume
+        hostPath:
+          path: /path/to/tasks
+      - name: config-volume
+        hostPath:
+          path: /path/to/config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tasks-md-service
+spec:
+  selector:
+    app: tasks-md
+  ports:
+    - protocol: TCP
+      port: 3333
+      targetPort: 8080
+  type: ClusterIP
